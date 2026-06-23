@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 그룹포탈메일 SE 업데이트 완료 보고</title>
+<style>
+  :root{
+    --navy:#1f3a5f; --blue:#2c5f8a; --accent:#3b82c4;
+    --bg:#f4f6f9; --card:#ffffff; --line:#e2e8f0;
+    --txt:#1e293b; --muted:#64748b;
+    --green:#15803d; --green-bg:#dcfce7;
+    --amber:#b45309; --amber-bg:#fef3c7;
+    --red:#b91c1c; --red-bg:#fee2e2;
+    --slate:#475569; --slate-bg:#e2e8f0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Malgun Gothic","맑은 고딕",-apple-system,"Segoe UI",sans-serif;
+    background:var(--bg); color:var(--txt); line-height:1.6;
+    padding:32px 16px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+
+  .header{
+    background:linear-gradient(135deg,var(--navy),var(--blue));
+    color:#fff;border-radius:16px;padding:36px 40px;
+    box-shadow:0 8px 24px rgba(31,58,95,.18);
+  }
+  .header .eyebrow{font-size:13px;letter-spacing:2px;opacity:.85;font-weight:600;}
+  .header h1{font-size:30px;margin:8px 0 18px;font-weight:800;letter-spacing:-.5px;}
+  .meta{display:flex;flex-wrap:wrap;gap:10px 28px;font-size:14px;}
+  .meta .item{display:flex;align-items:center;gap:8px;}
+  .meta .k{opacity:.8;}
+  .meta .v{font-weight:700;}
+  .ver-pill{background:rgba(255,255,255,.18);padding:3px 12px;border-radius:20px;font-weight:700;}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0;}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+  .stat .num{font-size:34px;font-weight:800;color:var(--navy);line-height:1;}
+  .stat .lbl{font-size:13px;color:var(--muted);margin-top:8px;font-weight:600;}
+  .stat .sub{font-size:12px;color:var(--accent);margin-top:4px;}
+
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin:18px 0;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+  h2{font-size:19px;color:var(--navy);font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+  h2 .bar{width:5px;height:20px;background:var(--accent);border-radius:3px;}
+  .method-list{list-style:none;}
+  .method-list li{padding:6px 0 6px 26px;position:relative;color:var(--slate);}
+  .method-list li::before{content:"▹";position:absolute;left:4px;color:var(--accent);font-weight:700;}
+  .lead{color:var(--slate);margin-bottom:14px;}
+  .lead b{color:var(--navy);}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{background:var(--navy);color:#fff;padding:11px 12px;text-align:left;font-weight:700;font-size:13px;}
+  thead th:first-child{width:40px;text-align:center;border-radius:8px 0 0 0;}
+  thead th:last-child{border-radius:0 8px 0 0;}
+  tbody td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tbody tr:hover{background:#f8fafc;}
+  td.no{text-align:center;font-weight:800;color:var(--accent);}
+  td.item{font-weight:700;color:var(--navy);width:24%;}
+  td.chg{color:var(--slate);width:34%;}
+  td.act{width:34%;}
+  code{background:#eef2f7;padding:1px 6px;border-radius:5px;font-size:12.5px;color:#334155;font-family:Consolas,monospace;}
+  .chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;}
+  .chips span{background:#eef2f7;color:#334155;border:1px solid #d6dee8;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;font-family:Consolas,"Malgun Gothic",monospace;}
+
+  .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;white-space:nowrap;}
+  .b-fix{background:var(--green-bg);color:var(--green);}
+  .b-none{background:var(--slate-bg);color:var(--slate);}
+  .b-sec{background:var(--red-bg);color:var(--red);}
+
+  .note{margin-top:18px;background:#f1f5fb;border-left:4px solid var(--accent);border-radius:8px;padding:16px 18px;}
+  .note h3{font-size:14px;color:var(--navy);margin-bottom:10px;font-weight:800;}
+  .note p{font-size:13.5px;color:var(--slate);margin:7px 0;}
+  .note p b{color:var(--navy);}
+
+  .keep{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .keep .c{display:flex;gap:12px;align-items:flex-start;background:var(--green-bg);border:1px solid #bbf7d0;border-radius:12px;padding:16px 18px;}
+  .keep .ic{flex:0 0 28px;height:28px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;}
+  .keep .tx{color:#14532d;font-size:14px;font-weight:600;}
+  .keep .tx small{display:block;color:#3f6b4e;font-weight:500;font-size:12px;margin-top:4px;}
+
+  td.eval{color:var(--slate);width:46%;}
+  .b-eval{background:var(--amber-bg);color:var(--amber);}
+
+  footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:24px;padding-top:16px;}
+
+  @media (max-width:760px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .keep{grid-template-columns:1fr;}
+    td.item,td.chg,td.act,td.eval{width:auto;}
+  }
+  @media print{
+    body{background:#fff;padding:0;}
+    section,.stat{box-shadow:none;break-inside:avoid;}
+    .header{box-shadow:none;}
+    tbody tr:hover{background:transparent;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="eyebrow">EXCHANGE SERVER UPGRADE · COMPLETION REPORT</div>
+    <h1>2026 그룹포탈메일 SE 업데이트 완료 보고</h1>
+    <div class="meta">
+      <div class="item"><span class="k">대상</span><span class="v">그룹포탈 메일 서버 18대</span><span style="opacity:.7">(메일박스 16 · Edge 2)</span></div>
+      <div class="item"><span class="k">버전</span><span class="ver-pill">Exchange 2019 CU14 → Server SE</span></div>
+      <div class="item"><span class="k">작성일</span><span class="v">2026-06-23</span></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">18</div><div class="lbl">대상 서버</div><div class="sub">메일박스 16 + Edge 2</div></div>
+    <div class="stat"><div class="num">11</div><div class="lbl">리셋·조치 항목</div><div class="sub">CU14 → SE 변경분</div></div>
+    <div class="stat"><div class="num">4</div><div class="lbl">유지 항목</div><div class="sub">업데이트 후 보존</div></div>
+    <div class="stat"><div class="num">3</div><div class="lbl">검토 후 미조치</div><div class="sub">영향 없음 확인</div></div>
+  </div>
+
+  <section>
+    <h2><span class="bar"></span>1. 작업 방법</h2>
+    <p class="lead">18대 서버 전체에 대해 <b>CU14 상태의 설정값을 전수 저장</b>한 뒤, SE 업데이트 이후 동일 항목을 다시 추출하여 <b>전/후 비교를 토대로</b> 변경분을 식별·원복하는 방식으로 진행하였다. 비교는 <b>전용 설정 비교 도구(C# WPF)</b> 와 <b>PowerShell 캡처 스크립트</b>를 사용해 전/후 스냅샷을 전수 대조하였다.</p>
+    <ul class="method-list">
+      <li>PowerShell 관리 설정 (IIS 설정 포함)</li>
+      <li>각 서버 인증서 할당 상태</li>
+      <li>주요 설정 파일</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="bar"></span>2. SE 업데이트로 리셋된 항목 (CU14 → SE) 및 조치</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>항목</th><th>변경 내용</th><th>조치</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="no">1</td><td class="item">Outlook Anywhere SSL 오프로딩</td><td class="chg">설정 → <b>해제</b>됨</td><td class="act"><span class="badge b-fix">원복</span> 재설정</td></tr>
+        <tr><td class="no">2</td><td class="item">다수 사이트 SSL 필요(Require SSL)</td><td class="chg">해제했던 설정이 <b>SSL 필요로 복원</b>됨</td><td class="act"><span class="badge b-fix">원복</span> 기존 버전과 비교하여 다시 해제<br><small style="color:var(--accent);font-weight:600">▼ 상세 사이트 목록은 부록 A-2 참고</small></td></tr>
+        <tr><td class="no">3</td><td class="item">Windows 인증 공급자 순서 변경<br><span style="font-weight:500;color:var(--muted);font-size:12px">mapi, pushnotification</span></td><td class="chg"><code>NTLM, Negotiate</code> → <code>Negotiate, NTLM</code></td><td class="act"><span class="badge b-fix">원복</span> 기존 순서로 조정</td></tr>
+        <tr><td class="no">4</td><td class="item">activesync 인증 공급자 제거</td><td class="chg"><code>NTLM, Negotiate</code> 가 사라짐</td><td class="act"><span class="badge b-none">미조치</span> 미사용 서비스</td></tr>
+        <tr><td class="no">5</td><td class="item">OWA 소스 변경<br><span style="font-weight:500;color:var(--muted);font-size:12px">microsoft.owa.mail.compose</span></td><td class="chg">일부 이름 변경 확인 (로직 변화 없음)</td><td class="act"><span class="badge b-fix">조치</span> CU14 덮어쓰기가 아닌 <b>SE 버전을 직접 수정</b></td></tr>
+        <tr><td class="no">6</td><td class="item">공인 인증서 역할</td><td class="chg"><code>IIS</code> 전용 → <code>SMTP, IIS</code></td><td class="act"><span class="badge b-fix">원복</span> SMTP 역할은 자체 인증서 활용 중</td></tr>
+        <tr><td class="no">7</td><td class="item">TLS 1.3 자동 활성화</td><td class="chg">업데이트 시 <b>자동 활성화</b>됨</td><td class="act"><span class="badge b-sec">보안</span> 중간 네트워크/타 장비 호환 위해 <b>전부 Disable</b></td></tr>
+        <tr><td class="no">8</td><td class="item">EWS · OAB OAuth 인증 재출현</td><td class="chg">해제했던 OAuth가 다시 나타남</td><td class="act"><span class="badge b-fix">해제</span> M365 하이브리드 아님 → 기존에도 해제 상태</td></tr>
+        <tr><td class="no">9</td><td class="item">Edge Transport Agent 우선순위 변경</td><td class="chg">에이전트 순서 변경됨</td><td class="act"><span class="badge b-fix">원복</span> 순서 재조정 (<b>DKIM 맨 마지막</b>)</td></tr>
+        <tr><td class="no">10</td><td class="item">수신 커넥터 MaxLocalHopCount</td><td class="chg">기존 <code>12</code> → 업데이트 후 <code>5</code></td><td class="act"><span class="badge b-fix">원복</span> 메일 서버 16대 감안해 <b>12로 원복</b></td></tr>
+        <tr><td class="no">11</td><td class="item">확장된 보호(Extended Protection)</td><td class="chg">활성 상태로 변경됨</td><td class="act"><span class="badge b-sec">보안</span> 다시 <b>비활성화</b></td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <h3>조치 근거 (보강)</h3>
+      <p><b>#7 TLS 1.3</b> — TLS 1.3은 Exchange 기능이 아니라 <b>새 OS(WS2022+)의 Schannel 기능</b>으로, SE 전환이 새 OS와 함께 오면서 활성화되었다. 따라서 <b>OS(Schannel) 레벨에서 Disable</b> 처리하였다.</p>
+      <p><b>#11 확장된 보호(EP)</b> — EP는 인증을 외부 TLS 채널에 묶는 <b>채널 바인딩 토큰(CBT)</b> 방식인데, SSL 오프로딩은 TLS가 LB에서 종료되어 CBT가 불일치(중간자로 간주)한다. 즉 EP와 SSL 오프로딩은 <b>구조적으로 비호환</b>이며, 오프로딩을 유지하는 한 <b>EP 비활성 유지는 선택이 아니라 필수</b>이다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="bar"></span>3. 업데이트 후에도 유지된 항목</h2>
+    <div class="keep">
+      <div class="c"><div class="ic">✓</div><div class="tx">거의 대부분의 OWA 소스 및 환경 설정 유지</div></div>
+      <div class="c"><div class="ic">✓</div><div class="tx">Transport Agent Queue 위치 보존</div></div>
+      <div class="c"><div class="ic">✓</div><div class="tx">Edge 구독(EdgeSubscription) 유지 — 풀리지 않음<small>SE 후 ECP의 Edge 버전 표시는 갱신 안 될 수 있으나 동작 정상 · EdgeSync 유지 → 재구독 불필요</small></div></div>
+      <div class="c"><div class="ic">✓</div><div class="tx">수신 커넥터 — MaxLocalHopCount 제외 모든 설정 유지(인증 등)</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="bar"></span>4. 검토 후 조치 불필요 항목</h2>
+    <p class="lead">SE 전환 시 보안 기능 변화 가능성을 함께 검토하였으며, 아래 항목은 <b>검토 결과 우리 환경에 영향이 없어 조치하지 않았다.</b></p>
+    <table>
+      <thead>
+        <tr><th style="width:20%">항목</th><th>검토 결과</th><th style="width:18%">판단</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="item">AMSI 통합</td><td class="eval">Exchange 2019 <b>CU10(2021.6)부터 기본 활성</b> → CU14에 이미 적용되어 약 2년간 무사 운영</td><td><span class="badge b-eval">미조치</span> SE 신규 아님</td></tr>
+        <tr><td class="item">Serialization 데이터 서명</td><td class="eval"><b>약 CU13부터 기본 활성</b> → CU14에 이미 적용 상태</td><td><span class="badge b-eval">미조치</span> SE 신규 아님</td></tr>
+        <tr><td class="item">Cipher Suite</td><td class="eval">TLS 1.3 비활성 / TLS 1.2 활성으로 충분. SSL 오프로딩 구조상 서버는 LB하고만 TLS 협상 → 공통 cipher 유지로 위험 낮음 (필요 시 <code>Get-TlsCipherSuite</code> 전/후 비교 가능)</td><td><span class="badge b-eval">불필요</span> 별도 조정 안 함</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="bar"></span>부록 A. 공통 변경점 — SK-MAIL-N01 ~ N15</h2>
+    <p class="lead">SK-MAIL-N01 ~ N15는 변경점이 거의 일관되어 <b>공통으로 기술</b>한다(SK-MAIL-N14 대표 검증). <b>버전 정보(빌드 / AdminDisplayVersion)는 제외</b>하였다. (전체 서버 상세는 별도 파일 <code>부록_서버별변경점.md</code> 참조)</p>
+    <table>
+      <thead>
+        <tr><th style="width:16%">구분</th><th>항목</th><th style="width:24%">전 → 후</th><th style="width:24%">조치·비고</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="item">Outlook Anywhere</td><td class="chg">SSLOffloading</td><td><code>True → False</code></td><td><span class="badge b-fix">원복</span> 오프로딩 해제</td></tr>
+        <tr><td class="item">Outlook Anywhere</td><td class="chg">External / InternalClientsRequireSsl</td><td><code>False → True</code></td><td><span class="badge b-fix">원복</span> 수반 변경</td></tr>
+        <tr>
+          <td class="item">IIS SSL</td>
+          <td class="chg">access.sslFlags — Default Web Site (13개 사이트)
+            <div class="chips">
+              <span>root</span><span>Autodiscover</span><span>AutodiscoverRedirect</span><span>ecp</span><span>EWS</span><span>MailNotifyWebService</span><span>ActiveSync</span><span>OAB</span><span>OrgChart</span><span>OutlookProfileAuth</span><span>owa</span><span>Rpc</span><span>WebSafer</span>
+            </div>
+          </td>
+          <td><code>0 → 264</code></td>
+          <td><span class="badge b-fix">원복</span> 기존값으로 다시 해제</td>
+        </tr>
+        <tr><td class="item">IIS SSL</td><td class="chg">Exchange Back End/PowerShell</td><td><code>296 → 264</code></td><td><span class="badge b-none">미조치</span> 커스텀 변경 이력 없음</td></tr>
+        <tr><td class="item">IIS 인증</td><td class="chg">mapi / PushNotification(BE) windowsAuth</td><td><code>NTLM,Negotiate → Negotiate,NTLM</code></td><td><span class="badge b-fix">원복</span> 순서 조정</td></tr>
+        <tr><td class="item">IIS 인증</td><td class="chg">ActiveSync (FE·BE) windowsAuth</td><td><code>Negotiate,NTLM → 제거</code></td><td><span class="badge b-none">미조치</span> 미사용</td></tr>
+        <tr><td class="item">OAuth</td><td class="chg">EX-EWS OAuthAuthentication / Auth Methods</td><td><code>False → True</code> · OAuth 추가</td><td><span class="badge b-fix">해제</span> 하이브리드 아님</td></tr>
+        <tr><td class="item">OAuth</td><td class="chg">EX-OAB OAuth / Auth Methods / RequireSSL</td><td><code>False → True</code> · OAuth 추가</td><td><span class="badge b-fix">해제</span></td></tr>
+        <tr><td class="item">ActiveSync</td><td class="chg">EX-ActiveSync WebSiteSSLEnabled</td><td><code>False → True</code></td><td><span class="badge b-none">미조치</span> 미사용</td></tr>
+        <tr><td class="item">TLS 1.3</td><td class="chg">Client/Server DisabledByDefault · Enabled (신규 키)</td><td><code>미설정 → 1 · 0</code></td><td><span class="badge b-sec">비활성</span> 유지</td></tr>
+        <tr><td class="item">수신 커넥터</td><td class="chg">MaxLocalHopCount (전 커넥터)</td><td><code>12 → 5</code></td><td><span class="badge b-fix">원복</span> 12로 복원</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="bar"></span>부록 B. SK-MAIL-N10 — /mapi sslFlags 특이사항 (유일한 예외)</h2>
+    <p class="lead">SK-MAIL-N01 ~ N15 중 <b>N10에서만</b> 발생. <code>Default Web Site/mapi</code> access.sslFlags가 <code>264 → 8</code>로 <b>자동 변경</b>되었으며(나머지는 264 유지), <span class="badge b-none">미조치</span> 8로 그대로 두었다.</p>
+    <div class="note">
+      <h3>미조치해도 영향이 없는 이유</h3>
+      <p><b>1. 8도 SSL 필수 유지</b> — <code>8 = Ssl</code>, <code>264 = Ssl + Ssl128</code>. 두 값 모두 <code>Ssl</code> 비트를 포함하므로 /mapi는 N10에서도 <b>HTTPS만 허용</b>한다(SSL 강제 불변).</p>
+      <p><b>2. 빠진 것은 <code>Ssl128</code>(256) 한 비트</b> — "128비트 미만 cipher 거부"를 강제하는 플래그이다.</p>
+      <p><b>3. 현대 OS엔 128비트 미만 cipher가 없음</b> — export급(40·56비트) cipher는 이미 제거되어, 실제 협상 cipher는 264든 8이든 <b>모두 128비트 이상으로 동일</b>하다.</p>
+      <p><b>4. SSL 오프로딩 구조</b> — 서버는 LB하고만 TLS를 협상하므로 영향 범위가 LB 한 구간으로 한정되고, 그마저도 cipher 차이가 없다.</p>
+      <p>→ <b>SSL 요구·암호화 강도·클라이언트 동작 모두 동일</b>하여 실질 영향 없음. (16대 값 통일을 원할 경우 <code>Ssl,Ssl128</code>(264)로 원복 가능)</p>
+    </div>
+  </section>
+
+  <footer>그룹포탈 메일 시스템 · Exchange SE 업그레이드 완료 보고 · 2026-06-23</footer>
+
+</div>
+</body>
+</html>

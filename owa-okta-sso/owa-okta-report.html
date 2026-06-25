@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OWA Okta 로그인 간헐 지연 조치 보고서</title>
+<style>
+  :root{
+    --ink:#1f2937; --sub:#5b6675; --line:#d7dee8; --blue:#1d3f63; --blue2:#2e5c8a;
+    --green:#1e6b2a; --red:#a4161a; --amber:#9a6a12; --soft:#f4f7fb; --codebg:#0d1b2a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9edf2;color:var(--ink);
+    font-family:"맑은 고딕","Malgun Gothic",system-ui,sans-serif;line-height:1.65;font-size:14px}
+  .page{max-width:820px;margin:24px auto;background:#fff;padding:40px 44px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08)}
+  .doc-title{border-bottom:3px solid var(--blue);padding-bottom:14px;margin-bottom:18px}
+  .doc-title .kicker{color:var(--blue2);font-size:12.5px;letter-spacing:1px;font-weight:bold}
+  .doc-title h1{margin:6px 0 0;font-size:23px;color:var(--blue)}
+  table.meta{width:100%;border-collapse:collapse;margin:0 0 22px;font-size:13px}
+  table.meta th,table.meta td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  table.meta th{background:var(--soft);width:90px;color:#374151;font-weight:600;white-space:nowrap}
+  h2{font-size:16.5px;color:var(--blue);margin:26px 0 10px;
+    border-left:5px solid var(--blue2);padding-left:10px}
+  h3{font-size:14px;margin:14px 0 6px;color:#374151}
+  p{margin:7px 0}
+  ul{margin:7px 0;padding-left:20px} li{margin:4px 0}
+  code{background:#eef2f7;border-radius:4px;padding:1px 5px;font-family:Consolas,monospace;font-size:12.5px}
+  pre{background:var(--codebg);color:#e6edf3;border-radius:8px;padding:13px 15px;overflow:auto;
+    font-family:Consolas,monospace;font-size:12.5px;line-height:1.5}
+  pre .c{color:#7d8aa0}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  table.tbl th{background:var(--soft)}
+  .summary{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px 18px}
+  .summary b{color:var(--blue)}
+  .result{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0}
+  .result>div{flex:1;min-width:200px;border-radius:8px;padding:12px 16px;text-align:center}
+  .r-before{background:#fdecec;border:1px solid #efb9bb}
+  .r-after{background:#e7f4e9;border:1px solid #b3d9b8}
+  .r-before .v{color:var(--red)} .r-after .v{color:var(--green)}
+  .v{font-size:22px;font-weight:bold} .result .lbl{font-size:12.5px;color:var(--sub)}
+  .badge{display:inline-block;border-radius:5px;padding:2px 9px;font-size:12px;font-weight:bold}
+  .b-done{background:#e7f4e9;color:var(--green);border:1px solid #b3d9b8}
+  .note{background:#eef4fb;border-left:4px solid var(--blue2);border-radius:6px;padding:11px 15px;margin:10px 0;font-size:13.3px}
+  .ref{background:#fff8ec;border-left:4px solid var(--amber);border-radius:6px;padding:11px 15px;margin:10px 0;font-size:13.3px}
+  .ref b{color:var(--amber)}
+  .foot{margin-top:30px;padding-top:12px;border-top:1px solid var(--line);
+    color:var(--sub);font-size:11.5px;display:flex;justify-content:space-between}
+  @media print{body{background:#fff}.page{box-shadow:none;margin:0;max-width:none}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-title">
+    <div class="kicker">장애 / 조치 보고서</div>
+    <h1>OWA Okta 로그인 간헐적 지연 — 원인 분석 및 조치</h1>
+  </div>
+
+  <table class="meta">
+    <tr><th>대상 시스템</th><td>그룹Portal 통합메일 OWA (SK-MAIL-N01 ~ N16)</td>
+        <th>문서번호</th><td>—</td></tr>
+    <tr><th>작성일</th><td>2026-06-25</td>
+        <th>작성자</th><td>강범석 / 믹시스템</td></tr>
+    <tr><th>관련 작업</th><td>OWA Okta(WS-Fed) 인증 전환</td>
+        <th>상태</th><td><span class="badge b-done">조치 완료 · 효과 확인</span></td></tr>
+  </table>
+
+  <h2>1. 요약 (Executive Summary)</h2>
+  <div class="summary">
+    OWA의 Okta 인증 전환 후, 사용자 로그인 마지막 단계에서 <b>간헐적으로 약 13초 지연</b>이 발생하였다.
+    원인은 <b>폐쇄망 서버</b>가 <b>ADFS 적용을 위해 등록한 Okta 서명 인증서(<code>okta.cert</code>) 검증 과정</b>에서
+    <b>Microsoft 신뢰 인증서 목록을 외부(Windows Update)에서 갱신하려다 응답을 받지 못해 약 15초간 대기</b>한 것으로 확인되었다. 해당 외부 갱신 시도를 비활성화하는
+    <b>레지스트리 설정 적용</b>으로 지연이 해소되었으며, 조치 후 응답 시간이 <b>1초 미만으로 정상화</b>되었다.
+  </div>
+
+  <h2>2. 발생 현상 및 영향</h2>
+  <table class="tbl">
+    <tr><th>구분</th><th>내용</th></tr>
+    <tr><td>현상</td><td>Okta 로그인 후 <code>mail.sk.com</code> 복귀 단계에서 화면 멈춤(약 13초)</td></tr>
+    <tr><td>발생 양상</td><td>상시가 아닌 <b>간헐적</b> 발생 (대부분 정상 응답)</td></tr>
+    <tr><td>영향 범위</td><td>OWA 웹 로그인 사용자 (체감 지연). 메일 송수신 등 기능 장애는 없음</td></tr>
+    <tr><td>심각도</td><td>중 (서비스 중단 아님, 사용자 경험 저하)</td></tr>
+  </table>
+
+  <h2>3. 원인 분석</h2>
+  <p>세 가지 요인이 결합되어 발생하였다.</p>
+  <table class="tbl">
+    <tr><th>요인</th><th>설명</th></tr>
+    <tr><td>① 폐쇄망 환경</td><td>서버가 외부(<code>ctldl.windowsupdate.com</code>)로 통신 불가</td></tr>
+    <tr><td>② ADFS/Okta 전환</td><td>전환 후 <b>로그인마다</b>, 본 작업에서 <b>ADFS 적용을 위해 등록한 Okta 서명 인증서(<code>okta.cert</code>)</b> 로 서명된 토큰의 <b>인증서 체인 검증</b>을 수행(기존 폼 인증에는 없던 동작)</td></tr>
+    <tr><td>③ 인증서 목록 자동 갱신</td><td>인증서 검증 시 Windows가 신뢰/거부 목록(CTL)을 외부에서 자동 갱신하려는 기본 동작</td></tr>
+  </table>
+  <h3>왜 "가끔"만 발생했는가 (간헐성의 핵심 — 부정 캐시)</h3>
+  <p>같은 인증서 검증인데도 어떤 로그인은 정상이고 어떤 로그인만 13초가 걸린 이유는, 외부 목록(CTL) 조회가
+  <b>성공했을 때와 실패했을 때 캐시 수명이 완전히 다르기 때문</b>이다.</p>
+  <table class="tbl">
+    <tr><th>상황</th><th>캐시 동작</th><th>지연</th></tr>
+    <tr><td>인터넷 가능(정상망)</td><td>1회 <b>성공</b> 후 <b>장기 캐시</b>(수일 단위)</td><td>거의 없음</td></tr>
+    <tr><td>폐쇄망(본 환경)</td><td>매번 <b>실패</b> → "실패했음" 상태를 <b>짧게만(분 단위) 기억 = 부정 캐시(negative cache)</b></td><td>짧은 주기로 반복</td></tr>
+  </table>
+  <p>폐쇄망에서는 다운로드가 <b>매번 실패</b>하고, 그 <b>부정 캐시는 일정 시간(관찰값: 수 분~십수 분)</b> 만 유지된다. 그 결과:</p>
+  <ul>
+    <li><b>부정 캐시가 살아있는 동안</b> 들어온 로그인 → "방금 실패했으니 다시 안 나감" → <b>즉시 통과(정상 속도)</b></li>
+    <li><b>부정 캐시가 만료된 직후</b> 들어온 로그인 → 죽은 주소(<code>ctldl…</code>)를 다시 조회 → <b>약 13초 대기 후</b> 통과</li>
+  </ul>
+  <p>따라서 <b>부정 캐시 주기에 한 번</b>꼴로 느린 로그인이 나타나고 그 사이 로그인은 정상이었던 것이 — 바로 "간헐적"으로 보인 이유다. (정확한 주기는 환경별로 다르며 별첨 방법으로 실측)</p>
+  <p class="note">본 현상은 <b>브라우저 캐시와 무관</b>하다. 테스트는 매번 <b>새 창(새 인증)</b>으로 수행하여 브라우저 세션 영향이 배제되었으며,
+  지연은 전적으로 <b>서버 측 인증서 검증의 재시도 타이밍(부정 캐시 만료 주기)</b>에서 비롯된다.</p>
+  <h3>원인 확인 및 검증 데이터</h3>
+  <table class="tbl">
+    <tr><th>확인 항목</th><th>방법</th><th>결과 (증거)</th></tr>
+    <tr><td>1회 조회 타임아웃</td><td><code>certutil -urlfetch -verify</code> (온라인 강제)</td><td><b>매회 약 13초</b> · 100% 재현</td></tr>
+    <tr><td>캐시 실패 상태</td><td><code>certutil -urlcache "…authrootstl.cab"</code></td><td><b>**** OFFLINE ****</b> (다운로드 실패 캐시)</td></tr>
+    <tr><td>재시도(부정 캐시) 주기</td><td>CryptnetUrlCache 메타데이터 <code>LastWriteTime</code> 관찰</td><td><b>관찰값: 수 분~십수 분</b> 간격 갱신 (환경별 상이)</td></tr>
+  </table>
+  <p class="note">검증 대상 인증서는 <b>본 ADFS 전환을 위해 등록한 Okta 서명 인증서</b>이다
+  (<code>okta.cert</code> / 자체서명 / Thumbprint <code>8FEAD90D3CEB90E62B6F46EA6A871C6391103754</code>,
+  <code>Set-OrganizationConfig -AdfsSignCertificateThumbprints</code> 로 등록).
+  이 인증서 자체에는 조회용 주소(CDP/OCSP)가 전혀 없음에도 검증이 지연된 점에서,
+  원인이 "인증서 폐기 조회"가 아닌 <b>OS의 신뢰목록(CTL) 자동 갱신(외부 통신)</b>임을 특정하였다.
+  <code>-urlfetch</code> 는 캐시를 무시하고 온라인 조회를 강제하므로 폐쇄망에서 100% 타임아웃이 재현된다.</p>
+
+  <h3>실측 증거 — 부정 캐시 상태와 "느렸던 시각"</h3>
+  <p>ADFS(Okta) 로그인 시 서버는 등록한 서명 인증서의 체인을 검증하며, 이때 Windows는 신뢰/거부 목록(CTL)
+  <b>3종(<code>authrootstl</code> · <code>disallowedcertstl</code> · <code>pinrulesstl</code>)</b>을 외부에서 조회·갱신하려 한다.
+  폐쇄망에서는 3종 모두 다운로드에 실패하여 <b>OFFLINE 상태의 부정 캐시</b>로 보관된다.</p>
+
+  <p><b>캡처 ① 부정 캐시 상태 — 3종 CTL 모두 OFFLINE</b> <span class="sub">(SK-MAIL-N03 실측)</span></p>
+  <pre>PS&gt; 'authrootstl','disallowedcertstl','pinrulesstl' | % { certutil -urlcache "http://ctldl.windowsupdate.com/.../$_.cab" }
+
+===== authrootstl =====
+http://ctldl.windowsupdate.com/msdownload/update/v3/static/trustedr/en/authrootstl.cab
+WinHttp 캐시 항목: 1
+****  OFFLINE  ****
+===== disallowedcertstl =====
+****  OFFLINE  ****
+===== pinrulesstl =====
+****  OFFLINE  ****</pre>
+  <img src="스샷1_OFFLINE.png" alt="캡처1: 3종 CTL OFFLINE" style="max-width:100%;border:1px solid #d7dee8;border-radius:6px;margin:6px 0" onerror="this.style.display='none'">
+
+  <p><b>캡처 ② 캐시가 "쓰여진(=재시도된) 시각"</b> <span class="sub">— 이 시각이 곧 "느렸던 로그인" 시각</span></p>
+  <table class="tbl">
+    <tr><th>CTL</th><th>쓰여진 시각</th><th>프로필</th></tr>
+    <tr><td>pinrulesstl</td><td>2026-06-25 09:49:33</td><td>NetworkService</td></tr>
+    <tr><td>disallowedcertstl</td><td>2026-06-25 09:49:21</td><td>NetworkService</td></tr>
+    <tr><td>pinrulesstl</td><td>2026-06-25 09:47:56</td><td>systemprofile</td></tr>
+    <tr><td>disallowedcertstl</td><td>2026-06-25 09:45:40</td><td>systemprofile</td></tr>
+    <tr><td>authrootstl</td><td>2026-06-25 09:07:09</td><td>NetworkService</td></tr>
+    <tr><td>authrootstl</td><td>2026-06-25 08:09:49</td><td>systemprofile</td></tr>
+  </table>
+  <img src="스샷2_캐시시각.png" alt="캡처2: CTL 캐시 쓰여진 시각" style="max-width:100%;border:1px solid #d7dee8;border-radius:6px;margin:6px 0" onerror="this.style.display='none'">
+
+  <p class="note">
+  <b>(가) 현재처럼 OFFLINE 부정 캐시가 남아 있는 상태</b>는 "이미 실패를 알고 있어" 외부 조회를 건너뛰므로 로그인이 <b>빠르게 통과</b>된다.<br>
+  <b>(나) 위 "쓰여진 시각"</b>이 곧 부정 캐시가 만료되어 <b>재시도(=약 13초 지연)가 발생한 시각</b>이며, 그 사이 시각의 로그인은 정상이었다.
+  (검증마다 확인되는 <b>거부목록 <code>disallowedcertstl</code>·<code>pinrulesstl</code></b> 이 09:45~09:49에 갱신 → 그 시점이 느린 로그인. <code>authrootstl</code> 은 더 뜸하게 갱신.)<br>
+  <b>(다) 정확한 부정 캐시 수명(주기)은 Microsoft 공식 문서에서 명시값을 찾지 못했다.</b>
+  다만 "언제 느렸는지"는 위 <b>캐시 쓰여진 시각</b>으로 확인 가능하며, 동일 명령을 수 분 간격으로 두 번 캡처해 시각이 바뀌는 간격을 보면 재시도 주기를 실측할 수 있다.</p>
+
+  <h2>4. 조치 내역</h2>
+  <p>외부 목록 자동 갱신 시도를 비활성화하는 레지스트리를 <b>전 서버(16대)</b>에 적용하였다. (폐쇄망 표준 대응)</p>
+  <pre><span class="c">:: 관리자 권한 CMD (서버별 적용)</span>
+reg add "HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot" ^
+  /v DisableRootAutoUpdate /t REG_DWORD /d 1 /f
+
+<span class="c">:: 반영</span>
+gpupdate /force  &  iisreset
+
+<span class="c">:: 적용 확인 (0x1)</span>
+reg query "HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot" /v DisableRootAutoUpdate</pre>
+  <table class="tbl">
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>적용 범위</td><td>서버(컴퓨터) 단위 — <code>HKLM</code> / 메일 서버 16대 전체</td></tr>
+    <tr><td>효과</td><td>인증서 검증이 <b>로컬 목록만</b> 사용 → 외부 대기 제거</td></tr>
+  </table>
+
+  <h2>5. 조치 결과</h2>
+  <div class="result">
+    <div class="r-before"><div class="lbl">조치 전</div><div class="v">~13초</div><div class="lbl">간헐적 지연</div></div>
+    <div class="r-after"><div class="lbl">조치 후</div><div class="v">1초 미만</div><div class="lbl">정상화</div></div>
+  </div>
+  <p>조치 후 동일 명령(<code>certutil … -verify</code>) 소요 시간이 1초 미만으로 단축되었으며,
+  사용자 로그인 지연 현상이 재현되지 않음을 확인하였다.</p>
+
+  <h2>6. 재발 방지 및 향후 관리</h2>
+  <ul>
+    <li>신규 도입 서버에도 동일 레지스트리 설정을 <b>표준 적용</b> (GPO 배포 권장)</li>
+    <li>자동 갱신을 비활성화하였으므로 <b>신뢰 루트 인증서는 수동(또는 GPO/WSUS)으로 관리</b></li>
+    <li>설정은 가역적이며, 필요 시 값 삭제 또는 <code>0</code> 변경으로 원복 가능</li>
+  </ul>
+
+  <div class="ref">
+    <b>[참고] 비전문가용 비유</b> — 손님(로그인)이 신분증(인증서)을 내면 직원(서버)은 "위조·정지 명단"에 없는지 확인한다.
+    그 명단을 가끔 본부(인터넷)에서 갱신하려 하는데, 폐쇄망은 전화선이 끊겨 있어 응답을 15초 기다린 뒤 통과시켰던 것이다.
+    "본부에 전화하는 규칙"을 끄면 책상 위 사본(로컬 목록)만 보고 즉시 통과한다.
+  </div>
+
+  <div class="foot">
+    <span>OWA Okta(WS-Fed) 전환 · 로그인 간헐 지연 조치 보고서</span>
+    <span>믹시스템</span>
+  </div>
+
+</div>
+</body>
+</html>

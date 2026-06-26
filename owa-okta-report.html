@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OWA Okta 로그인 간헐 지연 조치 보고서</title>
+<style>
+  :root{--ink:#1f2937;--sub:#5b6675;--line:#d7dee8;--blue:#1d3f63;--blue2:#2e5c8a;--green:#1e6b2a;--red:#a4161a;--amber:#9a6a12;--soft:#f4f7fb;--codebg:#0d1b2a;}
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9edf2;color:var(--ink);font-family:"맑은 고딕","Malgun Gothic",system-ui,sans-serif;line-height:1.65;font-size:14px}
+  .page{max-width:840px;margin:24px auto;background:#fff;padding:40px 44px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+  .doc-title{border-bottom:3px solid var(--blue);padding-bottom:14px;margin-bottom:18px}
+  .doc-title .kicker{color:var(--blue2);font-size:12.5px;letter-spacing:1px;font-weight:bold}
+  .doc-title h1{margin:6px 0 0;font-size:23px;color:var(--blue)}
+  table.meta{width:100%;border-collapse:collapse;margin:0 0 22px;font-size:13px}
+  table.meta th,table.meta td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  table.meta th{background:var(--soft);width:90px;color:#374151;font-weight:600;white-space:nowrap}
+  h2{font-size:16.5px;color:var(--blue);margin:26px 0 10px;border-left:5px solid var(--blue2);padding-left:10px}
+  h3{font-size:14px;margin:16px 0 6px;color:#374151}
+  p{margin:7px 0}
+  ul{margin:7px 0;padding-left:20px} li{margin:4px 0}
+  code{background:#eef2f7;border-radius:4px;padding:1px 5px;font-family:Consolas,monospace;font-size:12.5px}
+  pre{background:var(--codebg);color:#e6edf3;border-radius:8px;padding:13px 15px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;line-height:1.5;white-space:pre-wrap}
+  pre .c{color:#7d8aa0}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  table.tbl th{background:var(--soft)}
+  .summary{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px 18px}
+  .summary b{color:var(--blue)}
+  .result{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0}
+  .result>div{flex:1;min-width:200px;border-radius:8px;padding:12px 16px;text-align:center}
+  .r-before{background:#fdecec;border:1px solid #efb9bb}
+  .r-after{background:#e7f4e9;border:1px solid #b3d9b8}
+  .r-before .v{color:var(--red)} .r-after .v{color:var(--green)}
+  .v{font-size:22px;font-weight:bold} .result .lbl{font-size:12.5px;color:var(--sub)}
+  .badge{display:inline-block;border-radius:5px;padding:2px 9px;font-size:12px;font-weight:bold;background:#e7f4e9;color:var(--green);border:1px solid #b3d9b8}
+  .note{background:#eef4fb;border-left:4px solid var(--blue2);border-radius:6px;padding:11px 15px;margin:10px 0;font-size:13.3px}
+  .src{background:#fff8ec;border-left:4px solid var(--amber);border-radius:6px;padding:11px 15px;margin:10px 0;font-size:12.8px}
+  .src b{color:var(--amber)}
+  .quote{font-style:italic;color:#374151;border-left:3px solid #c9d2de;padding-left:10px;margin:5px 0}
+  .sub{color:var(--sub);font-size:12.5px}
+  .foot{margin-top:30px;padding-top:12px;border-top:1px solid var(--line);color:var(--sub);font-size:11.5px;display:flex;justify-content:space-between}
+  @media print{body{background:#fff}.page{box-shadow:none;margin:0;max-width:none}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-title">
+    <div class="kicker">장애 / 조치 보고서</div>
+    <h1>OWA Okta 로그인 간헐적 지연 — 원인 분석 및 조치</h1>
+  </div>
+
+  <table class="meta">
+    <tr><th>대상 시스템</th><td>그룹Portal 통합메일 OWA (SK-MAIL-N01 ~ N16)</td>
+        <th>문서번호</th><td>—</td></tr>
+    <tr><th>작성일</th><td>2026-06-25</td>
+        <th>작성자</th><td>강범석 / 믹시스템</td></tr>
+    <tr><th>관련 작업</th><td>OWA Okta(WS-Fed) 인증 전환</td>
+        <th>상태</th><td><span class="badge">조치 완료 · 효과 확인</span></td></tr>
+  </table>
+
+  <h2>1. 요약</h2>
+  <div class="summary">
+    OWA의 Okta 인증 전환 후, 사용자 로그인 마지막 단계에서 <b>간헐적으로 약 13초 지연</b>이 발생하였다.
+    원인은 <b>폐쇄망 서버</b>가 ADFS 적용을 위해 등록한 <b>Okta 서명 인증서(<code>okta.cert</code>) 검증 과정</b>에서
+    <b>Microsoft 신뢰/거부 목록(CTL)을 외부(Windows Update)에서 받으려다 도달 불가로 약 15초 타임아웃</b>한 것이다.
+    해당 외부 조회 시도를 비활성화하는 <b>레지스트리 설정</b>을 전 서버에 적용하여 <b>응답 시간이 1초 미만으로 정상화</b>되었다.
+  </div>
+
+  <h2>2. 발생 현상 및 영향</h2>
+  <table class="tbl">
+    <tr><th>구분</th><th>내용</th></tr>
+    <tr><td>현상</td><td>Okta 로그인 후 <code>mail.sk.com</code> 복귀 단계에서 화면 멈춤(약 13초)</td></tr>
+    <tr><td>발생 양상</td><td>상시가 아닌 <b>간헐적</b> 발생(대부분 정상 응답)</td></tr>
+    <tr><td>영향 범위</td><td>OWA 웹 로그인 사용자(체감 지연). 메일 송수신 등 기능 장애 없음</td></tr>
+    <tr><td>심각도</td><td>중 (서비스 중단 아님, 사용자 경험 저하)</td></tr>
+  </table>
+  <div class="result">
+    <div class="r-before"><div class="lbl">조치 전</div><div class="v">~13초</div><div class="lbl">간헐적 지연</div></div>
+    <div class="r-after"><div class="lbl">조치 후</div><div class="v">1초 미만</div><div class="lbl">상시 정상</div></div>
+  </div>
+
+  <h2>3. 원인 분석</h2>
+
+  <h3>3.1 결합된 3대 요인</h3>
+  <table class="tbl">
+    <tr><th>요인</th><th>설명</th></tr>
+    <tr><td>① 폐쇄망 환경</td><td>서버가 외부(<code>ctldl.windowsupdate.com</code>)로 통신 불가</td></tr>
+    <tr><td>② ADFS/Okta 전환</td><td>전환 후 <b>로그인마다</b>, 등록한 <b>Okta 서명 인증서(<code>okta.cert</code>)</b>로 서명된 토큰의 <b>인증서 체인 검증</b> 수행(기존 폼 인증에는 없던 동작)</td></tr>
+    <tr><td>③ CTL 자동 갱신</td><td>검증 시 Windows가 신뢰/거부 목록(CTL) 3종(<code>authrootstl</code>·<code>disallowedcertstl</code>·<code>pinrulesstl</code>)을 외부에서 받으려 함</td></tr>
+  </table>
+
+  <h3>3.2 동작 메커니즘 (CryptoAPI 네트워크 조회 + 도달 불가 URL 처리)</h3>
+  <p>인증서 검증 시 CryptoAPI는 폐기/목록 객체를 네트워크로 받는다. MS 문서가 명시하는 동작은 다음과 같다.</p>
+  <ul>
+    <li>디스크 캐시에 유효 객체가 없으면 <b>백그라운드 스레드</b>로 다운로드 시작, 호출 스레드는 <b>최대 15초 대기</b>.</li>
+    <li>15초 안에 못 받으면 <b>서버를 offline으로 표시</b>(다운로드는 백그라운드 계속). → 이 한 번이 사용자 <b>약 13초 지연</b>.</li>
+    <li>폐쇄망처럼 도달 불가한 URL은 <b>"도달 불가 URL 목록"(프로세스별 관리)</b>에 등록.</li>
+    <li>다음 시도 허용 시각 전까지의 모든 요청은 <b>즉시 offline 오류로 실패(네트워크 시도 안 함 = 빠르게 통과)</b>.</li>
+    <li>허용 시각에 재시도해서 또 실패하면 <b>대기 시간을 늘림(증가 방식은 문서 비명시), 최대 30분</b>. 성공하면 <b>15초로 리셋</b>(폐쇄망은 성공이 없어 미해당).</li>
+  </ul>
+  <div class="src">
+    <b>[근거] Microsoft Learn — How Certificate Revocation Works (Network Retrieval and Caching)</b>
+    <div class="quote">"If the object takes longer than 15 seconds to download, then CryptoAPI will report the server as offline, even as the retrieval continues in the background."</div>
+    <div class="quote">"The unreachable URL is added to a list of unreachable URLs. The list of unreachable URLs is maintained on a per process basis. ... any attempt to retrieve the object will fail immediately with an offline error. ... CryptoAPI will extend the time it will wait until another attempt is processed. The maximum time that it will wait is 30 minutes. If the attempted connection is successful, then the interval is reset to 15 seconds."</div>
+    출처: <a href="https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/ee619754(v=ws.10)">learn.microsoft.com/.../ee619754 (How Certificate Revocation Works)</a>
+  </div>
+
+  <h3>3.3 왜 "가끔" 발생했고, 30분보다 훨씬 잦았는가</h3>
+  <p><b>OFFLINE 캐시가 유효한 동안의 검증은 외부 조회를 건너뛰어 즉시 통과(정상)</b>되고, <b>재시도가 발생하는 시점</b>의 검증만 약 13초 지연된다.
+  그래서 재시도 시점에 로그인한 경우에만 느렸고 그 사이는 정상이었던 것이 — "간헐적"으로 보인 이유다.</p>
+  <p>지연 재발이 <b>"30분마다"보다 훨씬 잦았던 이유</b>는, 문서의 <b>30분은 "단일 URL·단일 프로세스가 오래 연속 실패했을 때 도달하는 상한"</b>일 뿐, 실제로는 <b>독립 타이머가 다수</b> 동시에 돌기 때문이다(아래는 검증된 사실에 근거한 설명):</p>
+  <ul>
+    <li><b>목록은 프로세스별</b>(문서 명시). OWA·ECP 앱풀의 <b>워커 프로세스가 여럿</b>이고, <b>앱풀 재활용/유휴 종료</b> 시마다 목록이 초기화되어 <b>다시 15초부터(짧은 간격)</b> 시작.</li>
+    <li><b>URL이 다수</b> — CTL 3종 + 인증서 체인의 CRL/OCSP가 <b>각자 독립 백오프 타이머</b>를 가짐.</li>
+    <li><b>서버 16대 + LB 분산</b> — 서버·프로세스마다 상태가 따로. 매번 다른 백엔드로 분산될 수 있음.</li>
+  </ul>
+  <p class="note">→ 체감 재발은 이 <b>수많은 독립 타이머의 합집합</b>이며, 다수가 아직 <b>짧은 초기 간격</b>이거나 재활용으로 리셋되므로 단일 "30분"보다 잦게 나타난다. <b>정확한 재발 주기는 단일 값으로 도출되지 않으며 본 보고서는 단정하지 않는다.</b> 실제 발생 시각은 3.4의 캐시 쓰여진 시각(실측)으로만 확인한다. (테스트는 매번 새 창=새 인증으로 수행하여 브라우저 세션 영향 배제)</p>
+
+  <h3>3.4 검증 데이터 (실측)</h3>
+  <table class="tbl">
+    <tr><th>확인 항목</th><th>방법</th><th>결과(증거)</th></tr>
+    <tr><td>1회 조회 타임아웃</td><td><code>certutil -urlfetch -verify</code> (온라인 강제)</td><td><b>매회 약 13초</b> · 100% 재현</td></tr>
+    <tr><td>캐시 실패 상태</td><td><code>certutil -urlcache "…authrootstl.cab"</code></td><td><b>**** OFFLINE ****</b></td></tr>
+    <tr><td>디스크 캐시 위치</td><td>MS 문서 표 ↔ 실제 서버</td><td><code>…\systemprofile\AppData\LocalLow\Microsoft\CryptnetUrlCache</code> 일치</td></tr>
+  </table>
+  <p class="sub">검증 대상 인증서: <code>okta.cert</code> / 자체서명 / Thumbprint <code>8FEAD90D3CEB90E62B6F46EA6A871C6391103754</code>. 이 인증서엔 CDP/OCSP가 없어, 원인은 "폐기 조회"가 아닌 <b>CTL 자동 갱신(외부 통신)</b>으로 특정됨.</p>
+
+  <p><b>캐시가 쓰여진(=재시도된) 시각 — SK-MAIL-N03 실측</b> <span class="sub">(서로 다른 프로필 = 서로 다른 프로세스의 독립 타이머)</span></p>
+  <table class="tbl">
+    <tr><th>CTL</th><th>쓰여진 시각</th><th>프로필(프로세스)</th></tr>
+    <tr><td>pinrulesstl</td><td>2026-06-25 09:49:33</td><td>NetworkService</td></tr>
+    <tr><td>disallowedcertstl</td><td>2026-06-25 09:49:21</td><td>NetworkService</td></tr>
+    <tr><td>pinrulesstl</td><td>2026-06-25 09:47:56</td><td>systemprofile</td></tr>
+    <tr><td>disallowedcertstl</td><td>2026-06-25 09:45:40</td><td>systemprofile</td></tr>
+    <tr><td>authrootstl</td><td>2026-06-25 09:07:09</td><td>NetworkService</td></tr>
+    <tr><td>authrootstl</td><td>2026-06-25 08:09:49</td><td>systemprofile</td></tr>
+  </table>
+  <p class="note">두 프로필(NetworkService·systemprofile)에서 같은 객체가 다른 시각에 갱신된 점이 <b>"목록은 프로세스별"</b>이라는 문서 내용과 일치하며, URL별·프로세스별 독립 타이머가 동시에 도는 정황의 실측 근거다.</p>
+
+  <h2>4. 조치 내역</h2>
+  <p>외부 목록 자동 갱신 시도를 비활성화하는 레지스트리를 <b>전 서버(16대)</b>에 적용(폐쇄망 표준 대응).</p>
+  <pre><span class="c">:: 관리자 권한 CMD (서버별 적용)</span>
+reg add "HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot" /v DisableRootAutoUpdate /t REG_DWORD /d 1 /f
+
+<span class="c">:: 반영</span>
+gpupdate /force  &amp;  iisreset
+
+<span class="c">:: 적용 확인 (0x1)</span>
+reg query "HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot" /v DisableRootAutoUpdate</pre>
+  <table class="tbl">
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>적용 범위</td><td>서버(컴퓨터) 단위 — <code>HKLM</code> / 메일 서버 16대 전체</td></tr>
+    <tr><td>효과</td><td>인증서 검증이 <b>로컬 목록만</b> 사용 → 외부 조회 시도 제거 → 타임아웃 소멸</td></tr>
+  </table>
+
+  <h2>5. 조치 결과</h2>
+  <p>조치 후 동일 명령(<code>certutil … -verify</code>) 소요 시간이 <b>1초 미만</b>으로 단축되었으며, 사용자 로그인 지연 현상이 재현되지 않음을 확인하였다.</p>
+
+  <h2>6. 재발 방지 및 향후 관리</h2>
+  <ul>
+    <li>신규 도입 서버에도 동일 설정을 <b>표준 적용</b>(GPO 배포 권장).</li>
+    <li>자동 갱신 비활성화에 따라 <b>신뢰 루트·거부 목록은 수동(오프라인 SST/GPO/WSUS)으로 주기적 갱신</b>.</li>
+    <li>설정은 가역적이며, 값 삭제 또는 <code>0</code> 변경으로 원복 가능.</li>
+  </ul>
+
+  <h2>참고 문헌 / 출처</h2>
+  <table class="tbl">
+    <tr><th>근거</th><th>출처</th></tr>
+    <tr><td>15초 타임아웃 → offline → 백그라운드 / 도달 불가 URL 백오프(per-process, 최대 30분, 성공 시 15초 리셋) / 디스크 캐시 위치</td>
+        <td><a href="https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/ee619754(v=ws.10)">Microsoft Learn — How Certificate Revocation Works</a></td></tr>
+    <tr><td>CryptoAPI의 CRL 다운로드 프록시 탐지(실행 ID별 IE 설정: NETWORK SERVICE/LOCAL SYSTEM 등)</td>
+        <td><a href="https://learn.microsoft.com/en-us/previous-versions/troubleshoot/browsers/security-privacy/description-of-cryptography-api-proxy-from-crl">Microsoft Learn — Cryptography API proxy detection (KB 2623724)</a></td></tr>
+  </table>
+  <p class="sub">※ 검증 결과, 본 사례의 "15초/offline/백그라운드" 근거는 KB 2623724(프록시 탐지)가 아니라 <b>ee619754(How Certificate Revocation Works)</b>임을 확인하여 출처를 바로잡음.</p>
+
+  <div class="foot">
+    <span>OWA Okta(WS-Fed) 전환 · 로그인 간헐 지연 조치 보고서</span>
+    <span>믹시스템</span>
+  </div>
+
+</div>
+</body>
+</html>
